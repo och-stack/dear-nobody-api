@@ -182,8 +182,33 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// Add friend
-app.post("/friend", authenticateToken, async (req, res) => {
+// get users
+app.get("/users", authenticateToken, async (req, res) => {
+    try {
+        const result = await pool.query(
+            `
+      SELECT
+        id,
+        username,
+        email,
+        created_at
+      FROM users
+      ORDER BY id;
+      `
+        );
+
+        res.json(result.rows);
+    } catch (error) {
+        console.log(error);
+
+        res.status(500).json({
+            error: "Failed to get users",
+        });
+    }
+});
+
+// Add friends
+app.post("/friends", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
         const { friend_id } = req.body;
@@ -244,7 +269,7 @@ app.post("/friend", authenticateToken, async (req, res) => {
     }
 });
 
-// Create post
+// Create posts
 app.post("/posts", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -325,4 +350,6 @@ app.get("/posts", authenticateToken, async (req, res) => {
         });
     }
 });
+
+
 

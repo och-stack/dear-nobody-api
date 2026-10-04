@@ -8,16 +8,49 @@
 <body>
     <h1>Dear Nobody API</h1>
 
-    <p>A simple social media API for writing posts.</p>
+    <p>
+        A simple social media API for sharing posts with friends.
+    </p>
 
-    <h2>Endpoints</h2>
+    <h2>Authentication</h2>
 
     <ul>
         <li>POST /signup</li>
         <li>POST /login</li>
-        <li>POST /friend</li>
-        <li>POST /posts</li>
+    </ul>
+
+    <h2>Users</h2>
+
+    <ul>
+        <li>GET /users</li>
+    </ul>
+
+    <h2>Friends</h2>
+
+    <ul>
+        <li>POST /friends</li>
+    </ul>
+
+    <h2>Posts</h2>
+
+    <ul>
         <li>GET /posts</li>
+        <li>POST /posts</li>
+    </ul>
+
+    <h2>Authentication Header</h2>
+
+    <p>
+        Protected endpoints require:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <h2>Post Visibility</h2>
+
+    <ul>
+        <li>Public</li>
+        <li>Friends-only</li>
     </ul>
 </body>
 
