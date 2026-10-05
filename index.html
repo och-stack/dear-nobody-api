@@ -6,52 +6,408 @@
 </head>
 
 <body>
-    <h1>Dear Nobody API</h1>
+    <h1>API Information</h1>
+
+    <h2>Base URL</h2>
 
     <p>
-        A simple social media API for sharing posts with friends.
+        https://dear-nobody-api-production.up.railway.app
     </p>
+
+    <hr>
 
     <h2>Authentication</h2>
 
-    <ul>
-        <li>POST /signup</li>
-        <li>POST /login</li>
-    </ul>
-
-    <h2>Users</h2>
-
-    <ul>
-        <li>GET /users</li>
-    </ul>
-
-    <h2>Friends</h2>
-
-    <ul>
-        <li>POST /friends</li>
-    </ul>
-
-    <h2>Posts</h2>
-
-    <ul>
-        <li>GET /posts</li>
-        <li>POST /posts</li>
-    </ul>
-
-    <h2>Authentication Header</h2>
-
     <p>
-        Protected endpoints require:
+        Protected endpoints require a JWT token.
     </p>
 
     <pre>Authorization: Bearer YOUR_TOKEN</pre>
 
-    <h2>Post Visibility</h2>
+    <hr>
+
+    <h2>1. Sign Up</h2>
+
+    <p><strong>POST /signup</strong></p>
+
+    <h3>Request</h3>
+
+    <pre>
+{
+  "username": "Alice",
+  "email": "alice@example.com",
+  "password": "123456"
+}
+    </pre>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Creates a new user and stores the password securely as a hashed password.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+{
+  "message": "User created successfully",
+  "user": {
+    "id": 1,
+    "username": "Alice",
+    "email": "alice@example.com",
+    "created_at": "2026-10-05T10:00:00.000Z"
+  }
+}
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Username or email already exists"
+}
+    </pre>
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <hr>
+
+    <h2>2. Log In</h2>
+
+    <p><strong>POST /login</strong></p>
+
+    <h3>Request</h3>
+
+    <pre>
+{
+  "email": "alice@example.com",
+  "password": "123456"
+}
+    </pre>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Verifies the user's email and password and returns a JWT authentication token.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+{
+  "message": "Login successful",
+  "token": "YOUR_JWT_TOKEN"
+}
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Invalid email or password"
+}
+    </pre>
+
+    <p>Status: <strong>401 Unauthorized</strong></p>
+
+    <hr>
+
+    <h2>3. Get Users</h2>
+
+    <p><strong>GET /users</strong></p>
+
+    <h3>Request</h3>
+
+    <p>
+        No request body is required.
+    </p>
+
+    <p>
+        Authentication header:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Returns a list of registered users.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+[
+  {
+    "id": 1,
+    "username": "Alice",
+    "email": "alice@example.com",
+    "created_at": "2026-10-05T10:00:00.000Z"
+  },
+  {
+    "id": 2,
+    "username": "Bob",
+    "email": "bob@example.com",
+    "created_at": "2026-10-05T10:05:00.000Z"
+  }
+]
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Authentication token is required"
+}
+    </pre>
+
+    <p>Status: <strong>401 Unauthorized</strong></p>
+
+    <hr>
+
+    <h2>4. Add Friend</h2>
+
+    <p><strong>POST /friends</strong></p>
+
+    <h3>Request</h3>
+
+    <p>
+        Authentication header:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <p>Request body:</p>
+
+    <pre>
+{
+  "friend_id": 2
+}
+    </pre>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Creates a friendship between the authenticated user and the selected user.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+{
+  "message": "Friend added successfully",
+  "friendship": {
+    "id": 1,
+    "user_id": 1,
+    "friend_id": 2,
+    "created_at": "2026-10-05T10:10:00.000Z"
+  }
+}
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Friend not found"
+}
+    </pre>
+
+    <p>Status: <strong>404 Not Found</strong></p>
+
+    <p>Another possible error:</p>
+
+    <pre>
+{
+  "error": "You cannot add yourself as a friend"
+}
+    </pre>
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <hr>
+
+    <h2>5. Create Post</h2>
+
+    <p><strong>POST /posts</strong></p>
+
+    <h3>Request</h3>
+
+    <p>
+        Authentication header:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <p>Request body:</p>
+
+    <pre>
+{
+  "content": "Hello from Dear Nobody!",
+  "visibility": "Public"
+}
+    </pre>
+
+    <p>
+        Visibility options:
+    </p>
 
     <ul>
         <li>Public</li>
         <li>Friends-only</li>
     </ul>
-</body>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Creates a new post for the authenticated user.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+{
+  "message": "Post created successfully",
+  "post": {
+    "id": 1,
+    "user_id": 1,
+    "content": "Hello from Dear Nobody!",
+    "visibility": "Public",
+    "created_at": "2026-10-05T10:15:00.000Z"
+  }
+}
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Content and visibility are required"
+}
+    </pre>
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <p>Another possible error:</p>
+
+    <pre>
+{
+  "error": "Visibility must be Public or Friends-only"
+}
+    </pre>
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <hr>
+
+    <h2>6. Get Posts</h2>
+
+    <p><strong>GET /posts</strong></p>
+
+    <h3>Request</h3>
+
+    <p>
+        No request body is required.
+    </p>
+
+    <p>
+        Authentication header:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Returns:
+    </p>
+
+    <ul>
+        <li>Public posts from all users</li>
+        <li>Your own posts</li>
+        <li>Friends-only posts from your friends</li>
+    </ul>
+
+    <h3>Example Response</h3>
+
+    <pre>
+[
+  {
+    "id": 2,
+    "user_id": 2,
+    "content": "Hello everyone!",
+    "visibility": "Public",
+    "created_at": "2026-10-05T10:20:00.000Z",
+    "username": "Bob"
+  },
+  {
+    "id": 1,
+    "user_id": 1,
+    "content": "This is my private friends post.",
+    "visibility": "Friends-only",
+    "created_at": "2026-10-05T10:15:00.000Z",
+    "username": "Alice"
+  }
+]
+    </pre>
+
+    <h3>Error Example</h3>
+
+    <pre>
+{
+  "error": "Authentication token is required"
+}
+    </pre>
+
+    <p>Status: <strong>401 Unauthorized</strong></p>
+
+    <hr>
+
+    <h2>Post Visibility</h2>
+
+    <h3>Public</h3>
+
+    <p>
+        A Public post can be seen by all authenticated users.
+    </p>
+
+    <h3>Friends-only</h3>
+
+    <p>
+        A Friends-only post can only be seen by the post owner and users who are friends with the post owner.
+    </p>
+
+    <hr>
+
+    <h2>Database Tables</h2>
+
+    <h3>users</h3>
+
+    <ul>
+        <li>id</li>
+        <li>username</li>
+        <li>email</li>
+        <li>password</li>
+        <li>created_at</li>
+    </ul>
+
+    <h3>posts</h3>
+
+    <ul>
+        <li>id</li>
+        <li>user_id</li>
+        <li>content</li>
+        <li>visibility</li>
+        <li>created_at</li>
+    </ul>
+
+    <h3>friendships</h3>
+
+    <ul>
+        <li>id</li>
+        <li>user_id</li>
+        <li>friend_id</li>
+        <li>created_at</li>
+    </ul>
 
 </html>
