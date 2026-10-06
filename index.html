@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html>
 
 <head>
@@ -6,6 +7,7 @@
 </head>
 
 <body>
+
     <h1>API Information</h1>
 
     <h2>Base URL</h2>
@@ -22,7 +24,11 @@
         Protected endpoints require a JWT token.
     </p>
 
-    <pre>Authorization: Bearer [TOKEN return from POST/login]</pre>
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <p>
+        The JWT token is returned from <strong>POST /login</strong>.
+    </p>
 
     <hr>
 
@@ -33,12 +39,13 @@
     <h3>Request</h3>
 
     <pre>
+
 {
-  "username": "Alice",
-  "email": "alice@example.com",
-  "password": "123456"
-}
-    </pre>
+"username": "Alice",
+"email": "[alice@example.com](mailto:alice@example.com)",
+"password": "123456"
+} </pre>
+
 
     <h3>Expected Result</h3>
 
@@ -49,24 +56,28 @@
     <h3>Example Response</h3>
 
     <pre>
+
+
 {
-  "message": "User created successfully",
-  "user": {
-    "id": 1,
-    "username": "Alice",
-    "email": "alice@example.com",
-    "created_at": "2026-10-05T10:00:00.000Z"
-  }
+"message": "User created successfully",
+"user": {
+"id": 1,
+"username": "Alice",
+"email": "[alice@example.com](mailto:alice@example.com)",
+"created_at": "2026-10-05T10:00:00.000Z"
 }
-    </pre>
+} </pre>
+
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Username or email already exists"
-}
-    </pre>
+"error": "Username or email already exists"
+} </pre>
+
 
     <p>Status: <strong>400 Bad Request</strong></p>
 
@@ -79,11 +90,13 @@
     <h3>Request</h3>
 
     <pre>
+
+
 {
-  "email": "alice@example.com",
-  "password": "123456"
-}
-    </pre>
+"email": "[alice@example.com](mailto:alice@example.com)",
+"password": "123456"
+} </pre>
+
 
     <h3>Expected Result</h3>
 
@@ -94,19 +107,23 @@
     <h3>Example Response</h3>
 
     <pre>
+
+
 {
-  "message": "Login successful",
-  "token": "YOUR_JWT_TOKEN"
-}
-    </pre>
+"message": "Login successful",
+"token": "YOUR_JWT_TOKEN"
+} </pre>
+
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Invalid email or password"
-}
-    </pre>
+"error": "Invalid email or password"
+} </pre>
+
 
     <p>Status: <strong>401 Unauthorized</strong></p>
 
@@ -131,41 +148,78 @@
     <h3>Expected Result</h3>
 
     <p>
-        Returns a list of registered users.
+        Returns registered users except the currently authenticated user.
+        The response also shows the friendship status and direction between
+        the authenticated user and each user.
     </p>
 
     <h3>Example Response</h3>
 
     <pre>
+
+
 [
-  {
-    "id": 1,
-    "username": "Alice",
-    "email": "alice@example.com",
-    "created_at": "2026-10-05T10:00:00.000Z"
-  },
-  {
-    "id": 2,
-    "username": "Bob",
-    "email": "bob@example.com",
-    "created_at": "2026-10-05T10:05:00.000Z"
-  }
-]
-    </pre>
+{
+"id": 2,
+"username": "Bob",
+"email": "[bob@example.com](mailto:bob@example.com)",
+"created_at": "2026-10-05T10:05:00.000Z",
+"friendship_id": 1,
+"friendship_status": "pending",
+"friendship_direction": "outgoing"
+},
+{
+"id": 3,
+"username": "Charlie",
+"email": "[charlie@example.com](mailto:charlie@example.com)",
+"created_at": "2026-10-05T10:10:00.000Z",
+"friendship_id": 2,
+"friendship_status": "accepted",
+"friendship_direction": "incoming"
+},
+{
+"id": 4,
+"username": "David",
+"email": "[david@example.com](mailto:david@example.com)",
+"created_at": "2026-10-05T10:15:00.000Z",
+"friendship_id": null,
+"friendship_status": null,
+"friendship_direction": null
+}
+] </pre>
+
+
+    <h3>Friendship Status</h3>
+
+    <ul>
+        <li><strong>pending</strong> - Friend request has not been accepted yet</li>
+        <li><strong>accepted</strong> - Friendship has been accepted</li>
+        <li><strong>null</strong> - No friendship request exists</li>
+    </ul>
+
+    <h3>Friendship Direction</h3>
+
+    <ul>
+        <li><strong>outgoing</strong> - You sent the friend request</li>
+        <li><strong>incoming</strong> - The other user sent the friend request</li>
+        <li><strong>null</strong> - No friendship request exists</li>
+    </ul>
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Authentication token is required"
-}
-    </pre>
+"error": "Authentication token is required"
+} </pre>
+
 
     <p>Status: <strong>401 Unauthorized</strong></p>
 
     <hr>
 
-    <h2>4. Add Friend</h2>
+    <h2>4. Send Friend Request</h2>
 
     <p><strong>POST /friends</strong></p>
 
@@ -180,54 +234,150 @@
     <p>Request body:</p>
 
     <pre>
+
+
 {
-  "friend_id": 2
-}
-    </pre>
+"friend_id": 2
+} </pre>
+
 
     <h3>Expected Result</h3>
 
     <p>
-        Creates a friendship between the authenticated user and the selected user.
+        Creates a pending friend request from the authenticated user
+        to the selected user.
     </p>
 
     <h3>Example Response</h3>
 
     <pre>
+
+
 {
-  "message": "Friend added successfully",
-  "friendship": {
-    "id": 1,
-    "user_id": 1,
-    "friend_id": 2,
-    "created_at": "2026-10-05T10:10:00.000Z"
-  }
+"message": "Friend request sent",
+"friendship": {
+"id": 1,
+"user_id": 1,
+"friend_id": 2,
+"status": "pending"
 }
-    </pre>
+} </pre>
+
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Friend not found"
-}
-    </pre>
+"error": "Friend ID is required"
+} </pre>
+
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <h3>Another Error Example</h3>
+
+    <pre>
+
+
+{
+"error": "You cannot add yourself as a friend"
+} </pre>
+
+
+    <p>Status: <strong>400 Bad Request</strong></p>
+
+    <h3>Another Error Example</h3>
+
+    <pre>
+
+
+{
+"error": "Friend not found"
+} </pre>
+
 
     <p>Status: <strong>404 Not Found</strong></p>
 
-    <p>Another possible error:</p>
+    <h3>Another Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "You cannot add yourself as a friend"
-}
-    </pre>
+"error": "Friendship already exists"
+} </pre>
+
 
     <p>Status: <strong>400 Bad Request</strong></p>
 
     <hr>
 
-    <h2>5. Create Post</h2>
+    <h2>5. Accept Friend Request</h2>
+
+    <p><strong>PUT /friends/:id</strong></p>
+
+    <h3>Request</h3>
+
+    <p>
+        Replace <strong>:id</strong> with the friendship ID.
+    </p>
+
+    <p>
+        Example:
+    </p>
+
+    <pre>PUT /friends/1</pre>
+
+    <p>
+        Authentication header:
+    </p>
+
+    <pre>Authorization: Bearer YOUR_TOKEN</pre>
+
+    <p>
+        No request body is required.
+    </p>
+
+    <h3>Expected Result</h3>
+
+    <p>
+        Accepts a pending friend request where the authenticated user
+        is the recipient of the request.
+    </p>
+
+    <h3>Example Response</h3>
+
+    <pre>
+
+
+{
+"message": "Friend request accepted",
+"friendship": {
+"id": 1,
+"user_id": 1,
+"friend_id": 2,
+"status": "accepted"
+}
+} </pre>
+
+
+    <h3>Error Example</h3>
+
+    <pre>
+
+
+{
+"error": "Friend request not found"
+} </pre>
+
+
+    <p>Status: <strong>404 Not Found</strong></p>
+
+    <hr>
+
+    <h2>6. Create Post</h2>
 
     <p><strong>POST /posts</strong></p>
 
@@ -242,19 +392,21 @@
     <p>Request body:</p>
 
     <pre>
+
+
 {
-  "content": "Hello from Dear Nobody!",
-  "visibility": "Public"
-}
-    </pre>
+"content": "Hello from Dear Nobody!",
+"visibility": "public"
+} </pre>
+
 
     <p>
         Visibility options:
     </p>
 
     <ul>
-        <li>Public</li>
-        <li>Friends-only</li>
+        <li><strong>public</strong></li>
+        <li><strong>friends</strong></li>
     </ul>
 
     <h3>Expected Result</h3>
@@ -266,41 +418,47 @@
     <h3>Example Response</h3>
 
     <pre>
+
+
 {
-  "message": "Post created successfully",
-  "post": {
-    "id": 1,
-    "user_id": 1,
-    "content": "Hello from Dear Nobody!",
-    "visibility": "Public",
-    "created_at": "2026-10-05T10:15:00.000Z"
-  }
+"message": "Post created successfully",
+"post": {
+"id": 1,
+"user_id": 1,
+"content": "Hello from Dear Nobody!",
+"visibility": "public",
+"created_at": "2026-10-05T10:15:00.000Z"
 }
-    </pre>
+} </pre>
+
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Content and visibility are required"
-}
-    </pre>
+"error": "Content and visibility are required"
+} </pre>
+
 
     <p>Status: <strong>400 Bad Request</strong></p>
 
-    <p>Another possible error:</p>
+    <h3>Another Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Visibility must be Public or Friends-only"
-}
-    </pre>
+"error": "Visibility must be Public or Friends-only"
+} </pre>
+
 
     <p>Status: <strong>400 Bad Request</strong></p>
 
     <hr>
 
-    <h2>6. Get Posts</h2>
+    <h2>7. Get Posts</h2>
 
     <p><strong>GET /posts</strong></p>
 
@@ -325,39 +483,55 @@
     <ul>
         <li>Public posts from all users</li>
         <li>Your own posts</li>
-        <li>Friends-only posts from your friends</li>
+        <li>Friends-only posts from accepted friends</li>
     </ul>
+
+    <p>
+        Posts are returned in ascending order by creation time.
+    </p>
 
     <h3>Example Response</h3>
 
     <pre>
+
+
 [
-  {
-    "id": 2,
-    "user_id": 2,
-    "content": "Hello everyone!",
-    "visibility": "Public",
-    "created_at": "2026-10-05T10:20:00.000Z",
-    "username": "Bob"
-  },
-  {
-    "id": 1,
-    "user_id": 1,
-    "content": "This is my private friends post.",
-    "visibility": "Friends-only",
-    "created_at": "2026-10-05T10:15:00.000Z",
-    "username": "Alice"
-  }
-]
-    </pre>
+{
+"id": 1,
+"user_id": 1,
+"content": "This is my post.",
+"visibility": "public",
+"created_at": "2026-10-05T10:15:00.000Z",
+"username": "Alice"
+},
+{
+"id": 2,
+"user_id": 2,
+"content": "Hello everyone!",
+"visibility": "public",
+"created_at": "2026-10-05T10:20:00.000Z",
+"username": "Bob"
+},
+{
+"id": 3,
+"user_id": 2,
+"content": "This is my friends-only post.",
+"visibility": "friends",
+"created_at": "2026-10-05T10:25:00.000Z",
+"username": "Bob"
+}
+] </pre>
+
 
     <h3>Error Example</h3>
 
     <pre>
+
+
 {
-  "error": "Authentication token is required"
-}
-    </pre>
+"error": "Authentication token is required"
+} </pre>
+
 
     <p>Status: <strong>401 Unauthorized</strong></p>
 
@@ -365,17 +539,31 @@
 
     <h2>Post Visibility</h2>
 
-    <h3>Public</h3>
+    <h3>public</h3>
 
     <p>
-        A Public post can be seen by all authenticated users.
+        A public post can be seen by all authenticated users.
     </p>
 
-    <h3>Friends-only</h3>
+    <h3>friends</h3>
 
     <p>
-        A Friends-only post can only be seen by the post owner and users who are friends with the post owner.
+        A friends post can be seen by the post owner and users who have
+        an accepted friendship with the post owner.
     </p>
+
+    <hr>
+
+    <h2>Friend Request Flow</h2>
+
+    <ol>
+        <li>User A sends a friend request to User B.</li>
+        <li>The friendship is created with status <strong>pending</strong>.</li>
+        <li>User B sees the request as an <strong>incoming</strong> request.</li>
+        <li>User B accepts the request using <strong>PUT /friends/:id</strong>.</li>
+        <li>The friendship status changes to <strong>accepted</strong>.</li>
+        <li>Both users can now see each other's friends-only posts.</li>
+    </ol>
 
     <hr>
 
@@ -407,7 +595,9 @@
         <li>id</li>
         <li>user_id</li>
         <li>friend_id</li>
-        <li>created_at</li>
+        <li>status</li>
     </ul>
+
+</body>
 
 </html>

@@ -10,9 +10,11 @@ dotenv.config();
 
 const app = express();
 
+// allow JSON body request and request from frontend
 app.use(express.json());
 app.use(cors());
 
+// supabase connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -20,6 +22,7 @@ const pool = new Pool({
     },
 });
 
+// Test the database connection
 pool.query("SELECT NOW()", (error) => {
     if (error) {
         console.log("Database connection failed");
@@ -28,10 +31,12 @@ pool.query("SELECT NOW()", (error) => {
     }
 });
 
+// API documentation
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
+// Start server
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
@@ -49,8 +54,10 @@ app.post("/signup", async (req, res) => {
             });
         }
 
+        // Hash the password before saving to the database
         const hashedPassword = await bcrypt.hash(password, 10);
 
+        // Insert the new user into the users table
         const result = await pool.query(
             `
       INSERT INTO users
@@ -91,6 +98,7 @@ app.post("/login", async (req, res) => {
             });
         }
 
+        // Find the user by email
         const result = await pool.query(
             `
       SELECT *
@@ -100,6 +108,7 @@ app.post("/login", async (req, res) => {
             [email]
         );
 
+        // stop if email does not exist
         if (result.rows.length === 0) {
             return res.status(401).json({
                 error: "Invalid email or password",
@@ -108,6 +117,7 @@ app.post("/login", async (req, res) => {
 
         const user = result.rows[0];
 
+        // compare the entered password with the hashed password
         const passwordMatch = await bcrypt.compare(
             password,
             user.password
@@ -119,6 +129,7 @@ app.post("/login", async (req, res) => {
             });
         }
 
+        // create a JWT token containing the user's information
         const token = jwt.sign(
             {
                 id: user.id,
@@ -144,6 +155,7 @@ app.post("/login", async (req, res) => {
 });
 
 // Authentication middleware
+// verify the JWT token
 function authenticateToken(req, res, next) {
     const authHeader = req.headers.authorization;
 
@@ -153,6 +165,7 @@ function authenticateToken(req, res, next) {
         });
     }
 
+    // get the token from "Bearer TOKEN"
     const token = authHeader.split(" ")[1];
 
     if (!token) {
@@ -162,13 +175,16 @@ function authenticateToken(req, res, next) {
     }
 
     try {
+        // verify if the token is valid
         const user = jwt.verify(
             token,
             process.env.JWT_SECRET
         );
 
+        // store the logged-in user's information in req.user
         req.user = user;
 
+        // continue to the protected route
         next();
     } catch (error) {
         return res.status(401).json({
@@ -177,9 +193,10 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// Get users
+// Get users except logged-in user
 app.get("/users", authenticateToken, async (req, res) => {
     try {
+        // get logged-in user from the JWT token
         const userId = req.user.id;
 
         const result = await pool.query(
@@ -225,21 +242,25 @@ app.get("/users", authenticateToken, async (req, res) => {
 // Send friend request
 app.post("/friends", authenticateToken, async (req, res) => {
     try {
+        // get the logged-in user's ID
         const userId = req.user.id;
         const { friend_id } = req.body;
 
+        // check that a friend ID was provided
         if (!friend_id) {
             return res.status(400).json({
                 error: "Friend ID is required",
             });
         }
 
+        // prevent users from adding themselves
         if (userId === Number(friend_id)) {
             return res.status(400).json({
                 error: "You cannot add yourself as a friend",
             });
         }
 
+        // check if the selected user exists
         const friendResult = await pool.query(
             `
       SELECT id
@@ -255,6 +276,7 @@ app.post("/friends", authenticateToken, async (req, res) => {
             });
         }
 
+        // create a new friend request with pending status
         const result = await pool.query(
             `
       INSERT INTO friendships
@@ -272,6 +294,7 @@ app.post("/friends", authenticateToken, async (req, res) => {
     } catch (error) {
         console.log(error);
 
+        // 23505 means the friendship already exists
         if (error.code === "23505") {
             return res.status(400).json({
                 error: "Friendship already exists",
@@ -284,12 +307,13 @@ app.post("/friends", authenticateToken, async (req, res) => {
     }
 });
 
-// Accept friend request
+// Accept friend request (what-if)
 app.put("/friends/:id", authenticateToken, async (req, res) => {
     try {
+        // get the friendship id and logged-id from the URL
         const friendshipId = req.params.id;
         const userId = req.user.id;
-
+        // change the status from pending to accepted
         const result = await pool.query(
             `
       UPDATE friendships
@@ -302,6 +326,7 @@ app.put("/friends/:id", authenticateToken, async (req, res) => {
             [friendshipId, userId]
         );
 
+        // if the request not found
         if (result.rows.length === 0) {
             return res.status(404).json({
                 error: "Friend request not found",
