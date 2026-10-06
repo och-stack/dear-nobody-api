@@ -54,10 +54,9 @@ app.post("/signup", async (req, res) => {
             });
         }
 
-        // Hash the password before saving to the database
+        // handle authentication hashed password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Insert the new user into the users table
         const result = await pool.query(
             `
       INSERT INTO users
@@ -73,10 +72,7 @@ app.post("/signup", async (req, res) => {
             user: result.rows[0],
         });
     } catch (error) {
-        console.log("ERROR CODE:", error.code);
-        console.log("ERROR CONSTRAINT:", error.constraint);
-        console.log("ERROR DETAIL:", error.detail);
-        console.log("ERROR MESSAGE:", error.message);
+        console.log(error);
 
         if (error.code === "23505") {
             return res.status(400).json({
@@ -89,6 +85,7 @@ app.post("/signup", async (req, res) => {
         });
     }
 });
+
 
 // Login
 app.post("/login", async (req, res) => {
