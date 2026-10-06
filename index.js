@@ -353,6 +353,3 @@ app.get("/posts", authenticateToken, async (req, res) => {
         });
     }
 });
-
-
-
