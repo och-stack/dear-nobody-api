@@ -54,6 +54,7 @@ app.post("/signup", async (req, res) => {
             });
         }
 
+        // handle authentication hashed password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
@@ -113,6 +114,7 @@ app.post("/login", async (req, res) => {
 
         const user = result.rows[0];
 
+        // the server checks and match the stored hashed password
         const passwordMatch = await bcrypt.compare(
             password,
             user.password
@@ -124,6 +126,7 @@ app.post("/login", async (req, res) => {
             });
         }
 
+        // after login, generate JWT
         const token = jwt.sign(
             {
                 id: user.id,
@@ -281,7 +284,7 @@ app.post("/posts", authenticateToken, async (req, res) => {
             });
         }
 
-        if (!["Public", "Friends-only"].includes(visibility)) {
+        if (!["public", "friends"].includes(visibility)) {
             return res.status(400).json({
                 error: "Visibility must be Public or Friends-only",
             });
@@ -328,7 +331,7 @@ app.get("/posts", authenticateToken, async (req, res) => {
       JOIN users
         ON posts.user_id = users.id
       WHERE
-        posts.visibility = 'Public'
+        posts.visibility = 'public'
         OR posts.user_id = $1
         OR EXISTS (
           SELECT 1
