@@ -13,8 +13,6 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-
-// Supabase connection
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
@@ -22,7 +20,6 @@ const pool = new Pool({
     },
 });
 
-// Test the database connection
 pool.query("SELECT NOW()", (error) => {
     if (error) {
         console.log("Database connection failed");
@@ -31,12 +28,10 @@ pool.query("SELECT NOW()", (error) => {
     }
 });
 
-// API docs
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Start server
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
@@ -54,7 +49,6 @@ app.post("/signup", async (req, res) => {
             });
         }
 
-        // handle authentication hashed password
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const result = await pool.query(
@@ -114,7 +108,6 @@ app.post("/login", async (req, res) => {
 
         const user = result.rows[0];
 
-        // the server checks and match the stored hashed password
         const passwordMatch = await bcrypt.compare(
             password,
             user.password
@@ -126,7 +119,6 @@ app.post("/login", async (req, res) => {
             });
         }
 
-        // after login, generate JWT
         const token = jwt.sign(
             {
                 id: user.id,
@@ -185,7 +177,6 @@ function authenticateToken(req, res, next) {
     }
 }
 
-// get users
 // Get users
 app.get("/users", authenticateToken, async (req, res) => {
     try {
@@ -231,7 +222,7 @@ app.get("/users", authenticateToken, async (req, res) => {
     }
 });
 
-// Add friend request
+// Send friend request
 app.post("/friends", authenticateToken, async (req, res) => {
     try {
         const userId = req.user.id;
@@ -283,7 +274,7 @@ app.post("/friends", authenticateToken, async (req, res) => {
 
         if (error.code === "23505") {
             return res.status(400).json({
-                error: "Friend request already exists",
+                error: "Friendship already exists",
             });
         }
 
@@ -293,44 +284,39 @@ app.post("/friends", authenticateToken, async (req, res) => {
     }
 });
 
-// Get authorized posts
-app.get("/posts", authenticateToken, async (req, res) => {
+// Accept friend request
+app.put("/friends/:id", authenticateToken, async (req, res) => {
     try {
+        const friendshipId = req.params.id;
         const userId = req.user.id;
 
         const result = await pool.query(
             `
-      SELECT
-        posts.id,
-        posts.user_id,
-        posts.content,
-        posts.visibility,
-        posts.created_at,
-        users.username
-      FROM posts
-      JOIN users
-        ON posts.user_id = users.id
-      WHERE
-        posts.visibility = 'public'
-        OR posts.user_id = $1
-        OR EXISTS (
-          SELECT 1
-          FROM friendships
-          WHERE friendships.user_id = $1
-            AND friendships.friend_id = posts.user_id
-            AND friendships.status = 'accepted'
-        )
-      ORDER BY posts.created_at ASC;
+      UPDATE friendships
+      SET status = 'accepted'
+      WHERE id = $1
+        AND friend_id = $2
+        AND status = 'pending'
+      RETURNING *;
       `,
-            [userId]
+            [friendshipId, userId]
         );
 
-        res.json(result.rows);
+        if (result.rows.length === 0) {
+            return res.status(404).json({
+                error: "Friend request not found",
+            });
+        }
+
+        res.json({
+            message: "Friend request accepted",
+            friendship: result.rows[0],
+        });
     } catch (error) {
         console.log(error);
 
         res.status(500).json({
-            error: "Failed to get posts",
+            error: "Failed to accept friend request",
         });
     }
 });
@@ -400,7 +386,8 @@ app.get("/posts", authenticateToken, async (req, res) => {
           SELECT 1
           FROM friendships
           WHERE friendships.user_id = $1
-          AND friendships.friend_id = posts.user_id
+            AND friendships.friend_id = posts.user_id
+            AND friendships.status = 'accepted'
         )
       ORDER BY posts.created_at ASC;
       `,
