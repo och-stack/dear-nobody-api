@@ -73,7 +73,10 @@ app.post("/signup", async (req, res) => {
             user: result.rows[0],
         });
     } catch (error) {
-        console.log(error);
+        console.log("ERROR CODE:", error.code);
+        console.log("ERROR CONSTRAINT:", error.constraint);
+        console.log("ERROR DETAIL:", error.detail);
+        console.log("ERROR MESSAGE:", error.message);
 
         if (error.code === "23505") {
             return res.status(400).json({
